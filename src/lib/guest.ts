@@ -24,10 +24,8 @@ export async function deleteOldGuestAccounts() {
 }
 
 export async function createGuestAccount() {
-  // Delete old guest accounts first
   await deleteOldGuestAccounts()
 
-  // Create new guest user
   const guestEmail = `guest_${Date.now()}@fintrack.app`
   const [result] = await pool.execute(
     'INSERT INTO users (name, email, is_guest) VALUES (?, ?, TRUE)',
@@ -36,17 +34,21 @@ export async function createGuestAccount() {
 
   const userId = result.insertId
 
-  // Seed default categories and get their IDs
-  const categoryIds: Record<string, number> = {}
-  for (const cat of defaultCategories) {
-    const [catResult] = await pool.execute(
-      'INSERT INTO categories (user_id, name, type, colour) VALUES (?, ?, ?, ?)',
-      [userId, cat.name, cat.type, cat.colour]
-    ) as any[]
-    categoryIds[cat.name] = catResult.insertId
-  }
+  // Batch insert categories
+  const categoryValues = defaultCategories
+    .map((cat) => `(${userId}, '${cat.name}', '${cat.type}', '${cat.colour}')`)
+    .join(',')
 
-  // Seed demo transactions for the last 3 months
+  const [catResult] = await pool.execute(
+    `INSERT INTO categories (user_id, name, type, colour) VALUES ${categoryValues}`
+  ) as any[]
+
+  // Build category ID map by name
+  const categoryIds: Record<string, number> = {}
+  defaultCategories.forEach((cat, i) => {
+    categoryIds[cat.name] = catResult.insertId + i
+  })
+
   const now = new Date()
 
   function monthDate(monthsAgo: number, day: number) {
@@ -114,12 +116,15 @@ export async function createGuestAccount() {
     { cat: 'Entertainment', type: 'expense', amount: 55.00, desc: 'Dinner out', date: monthDate(0, 21) },
   ]
 
-  for (const tx of transactions) {
-    const catId = categoryIds[tx.cat]
-    if (!catId) continue
+  // Batch insert transactions
+  const txValues = transactions
+    .filter((tx) => categoryIds[tx.cat])
+    .map((tx) => `(${userId}, ${categoryIds[tx.cat]}, '${tx.type}', ${tx.amount}, '${tx.desc}', '${tx.date}')`)
+    .join(',')
+
+  if (txValues) {
     await pool.execute(
-      'INSERT INTO transactions (user_id, category_id, type, amount, description, date) VALUES (?, ?, ?, ?, ?, ?)',
-      [userId, catId, tx.type, tx.amount, tx.desc, tx.date]
+      `INSERT INTO transactions (user_id, category_id, type, amount, description, date) VALUES ${txValues}`
     )
   }
 
