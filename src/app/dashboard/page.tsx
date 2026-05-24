@@ -57,6 +57,13 @@ export default function DashboardPage() {
     })
   }, [])
 
+  useEffect(() => {
+    if (session?.user?.isGuest && session?.user?.id) {
+      localStorage.setItem('guestId', session.user.id)
+      localStorage.setItem('guestTime', Date.now().toString())
+    }
+  }, [session])
+
   const month = new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
 
   if (loading) {

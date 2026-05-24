@@ -17,12 +17,32 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' },
         guest: { label: 'Guest', type: 'text' },
+        guestId: { label: 'Guest ID', type: 'text' },
       },
       async authorize(credentials) {
         // Guest login — create a fresh isolated guest account
         if (credentials?.guest === 'true') {
-          const guest = await createGuestAccount()
-          return guest
+            // Check if returning to existing guest account
+            if (credentials?.guestId) {
+                const [rows] = await pool.execute(
+                'SELECT * FROM users WHERE id = ? AND is_guest = TRUE',
+                [credentials.guestId]
+                ) as any[]
+
+                const existingGuest = (rows as any[])[0]
+                if (existingGuest) {
+                return {
+                    id: String(existingGuest.id),
+                    email: existingGuest.email,
+                    name: existingGuest.name,
+                    isGuest: true,
+                }
+                }
+            }
+
+            // No existing guest found, create new one
+            const guest = await createGuestAccount()
+            return guest
         }
 
         // Normal login

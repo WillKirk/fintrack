@@ -33,10 +33,10 @@ export default function LoginPage() {
     router.push('/dashboard')
   }
 
-  async function handleGuest() {
-    setLoading(true)
+    async function handleGuest() {
+        setLoading(true)
 
-      // Check for existing session first
+        // Check for existing session first
         const { getSession } = await import('next-auth/react')
         const session = await getSession()
 
@@ -45,19 +45,19 @@ export default function LoginPage() {
             return
         }
 
-    const result = await signIn('credentials', {
-        guest: 'true',
-        redirect: false,
-    })
+        const result = await signIn('credentials', {
+            guest: 'true',
+            redirect: false,
+        })
 
-    if (result?.error) {
-      setError('Guest login failed, please try again')
-      setLoading(false)
-      return
+        if (result?.error) {
+        setError('Guest login failed, please try again')
+        setLoading(false)
+        return
+        }
+
+        router.push('/dashboard')
     }
-
-    router.push('/dashboard')
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
