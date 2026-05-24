@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Plus, Trash2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import ConfirmModal from '@/components/ConfirmModal'
 
 type Category = {
   id: number
@@ -50,6 +51,10 @@ export default function TransactionsPage() {
   const [categoryId, setCategoryId] = useState('')
   const [description, setDescription] = useState('')
   const [date, setDate] = useState(new Date().toISOString().split('T')[0])
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; id: number | null }>({
+    isOpen: false,
+    id: null,
+  })
 
   useEffect(() => {
     Promise.all([
@@ -100,10 +105,14 @@ export default function TransactionsPage() {
   }
 
   async function handleDelete(id: number) {
-    if (!confirm('Delete this transaction?')) return
-
-    await fetch(`/api/transactions?id=${id}`, { method: 'DELETE' })
-    setTransactions((prev) => prev.filter((t) => t.id !== id))
+    setConfirmModal({ isOpen: true, id })
+  }
+  
+  async function confirmDelete() {
+    if (!confirmModal.id) return
+    await fetch(`/api/transactions?id=${confirmModal.id}`, { method: 'DELETE' })
+    setTransactions((prev) => prev.filter((t) => t.id !== confirmModal.id))
+    setConfirmModal({ isOpen: false, id: null })
   }
 
   if (loading) {
@@ -295,6 +304,13 @@ export default function TransactionsPage() {
             ))}
           </div>
         )}
+        <ConfirmModal
+            isOpen={confirmModal.isOpen}
+            title="Delete transaction"
+            message="Are you sure you want to delete this transaction? This can't be undone."
+            onConfirm={confirmDelete}
+            onCancel={() => setConfirmModal({ isOpen: false, id: null })}
+        />
       </div>
 
     </div>

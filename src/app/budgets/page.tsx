@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Plus, Trash2, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import ConfirmModal from '@/components/ConfirmModal'
 
 type Budget = {
   id: number
@@ -58,6 +59,10 @@ export default function BudgetsPage() {
   const [categoryId, setCategoryId] = useState('')
   const [amount, setAmount] = useState('')
   const [error, setError] = useState('')
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; id: number | null }>({
+    isOpen: false,
+    id: null,
+  })
 
   useEffect(() => {
     Promise.all([
@@ -125,11 +130,16 @@ export default function BudgetsPage() {
     setSubmitting(false)
   }
 
-  async function handleDelete(e: React.MouseEvent, id: number) {
-    e.stopPropagation()
-    if (!confirm('Delete this budget?')) return
-    await fetch(`/api/budgets?id=${id}`, { method: 'DELETE' })
-    setBudgets((prev) => prev.filter((b) => b.id !== id))
+
+  async function handleDelete(id: number) {
+    setConfirmModal({ isOpen: true, id })
+  }
+  
+  async function confirmDelete() {
+    if (!confirmModal.id) return
+    await fetch(`/api/budgets?id=${confirmModal.id}`, { method: 'DELETE' })
+    setBudgets((prev) => prev.filter((t) => t.id !== confirmModal.id))
+    setConfirmModal({ isOpen: false, id: null })
   }
 
   if (loading) {
@@ -294,6 +304,13 @@ export default function BudgetsPage() {
           })}
         </div>
       )}
+        <ConfirmModal
+            isOpen={confirmModal.isOpen}
+            title="Delete budget"
+            message="Are you sure you want to delete this budget? This can't be undone."
+            onConfirm={confirmDelete}
+            onCancel={() => setConfirmModal({ isOpen: false, id: null })}
+        />
     </div>
   )
 }

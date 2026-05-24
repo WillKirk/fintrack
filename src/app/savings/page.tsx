@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Plus, Trash2, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import ConfirmModal from '@/components/ConfirmModal'
 
 type SavingsGoal = {
   id: number
@@ -68,6 +69,10 @@ export default function SavingsPage() {
   const [currentAmount, setCurrentAmount] = useState('')
   const [deadline, setDeadline] = useState('')
   const [topUpAmount, setTopUpAmount] = useState('')
+  const [confirmModal, setConfirmModal] = useState<{ isOpen: boolean; goalId: number | null }>({
+    isOpen: false,
+    goalId: null,
+  })
 
   useEffect(() => {
     fetch('/api/savings')
@@ -168,10 +173,15 @@ export default function SavingsPage() {
 
   async function handleDelete(e: React.MouseEvent, id: number) {
     e.stopPropagation()
-    if (!confirm('Delete this goal?')) return
-    await fetch(`/api/savings?id=${id}`, { method: 'DELETE' })
-    setGoals((prev) => prev.filter((g) => g.id !== id))
-    if (editingGoal?.id === id) handleClose()
+    setConfirmModal({ isOpen: true, goalId: id })
+  }
+  
+  async function confirmDelete() {
+    if (!confirmModal.goalId) return
+    await fetch(`/api/savings?id=${confirmModal.goalId}`, { method: 'DELETE' })
+    setGoals((prev) => prev.filter((g) => g.id !== confirmModal.goalId))
+    if (editingGoal?.id === confirmModal.goalId) handleClose()
+    setConfirmModal({ isOpen: false, goalId: null })
   }
 
   if (loading) {
@@ -414,6 +424,14 @@ export default function SavingsPage() {
           })}
         </div>
       )}
+
+      <ConfirmModal
+      isOpen={confirmModal.isOpen}
+      title="Delete goal"
+      message="Are you sure you want to delete this savings goal? This can't be undone."
+      onConfirm={confirmDelete}
+      onCancel={() => setConfirmModal({ isOpen: false, goalId: null })}
+      />
     </div>
   )
 }
