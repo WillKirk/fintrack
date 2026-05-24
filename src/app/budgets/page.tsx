@@ -281,7 +281,9 @@ export default function BudgetsPage() {
                         : `${formatCurrency(remaining)} left`}
                     </span>
                     <button
-                      onClick={(e) => handleDelete(e, budget.id)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleDelete(budget.id)}}
                       className="opacity-0 group-hover:opacity-100 text-gray-300 hover:text-danger transition-all duration-150"
                     >
                       <Trash2 size={14} />
