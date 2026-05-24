@@ -35,6 +35,16 @@ export default function LoginPage() {
 
   async function handleGuest() {
     setLoading(true)
+
+      // Check for existing session first
+        const { getSession } = await import('next-auth/react')
+        const session = await getSession()
+
+        if (session?.user?.isGuest) {
+            router.push('/dashboard')
+            return
+        }
+
     const result = await signIn('credentials', {
         guest: 'true',
         redirect: false,
