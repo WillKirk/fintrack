@@ -26,7 +26,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             if (credentials?.guestId) {
                 const [rows] = await pool.execute(
                 'SELECT * FROM users WHERE id = ? AND is_guest = TRUE',
-                [credentials.guestId]
+                [String(credentials.guestId)]
                 ) as any[]
 
                 const existingGuest = (rows as any[])[0]
