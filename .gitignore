@@ -43,3 +43,6 @@ next-env.d.ts
 
 # sql files
 seed.sql
+
+#csv files
+test.csv

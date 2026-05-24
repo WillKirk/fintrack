@@ -1,9 +1,10 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Plus, Trash2 } from 'lucide-react'
+import { Plus, Trash2, Upload } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import ConfirmModal from '@/components/ConfirmModal'
+import CSVImport from '@/components/CSVImport'
 
 type Category = {
   id: number
@@ -55,6 +56,7 @@ export default function TransactionsPage() {
     isOpen: false,
     id: null,
   })
+  const [showImport, setShowImport] = useState(false)
 
   useEffect(() => {
     Promise.all([
@@ -137,6 +139,13 @@ export default function TransactionsPage() {
         >
           <Plus size={15} />
           Add transaction
+        </button>
+        <button
+            onClick={() => setShowImport(true)}
+            className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 px-4 py-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 transition-colors duration-200"
+            >
+            <Upload size={15} />
+            Import CSV
         </button>
       </div>
 
@@ -311,6 +320,16 @@ export default function TransactionsPage() {
             onConfirm={confirmDelete}
             onCancel={() => setConfirmModal({ isOpen: false, id: null })}
         />
+        {showImport && (
+            <CSVImport
+                categories={categories}
+                onImportComplete={async () => {
+                const updated = await fetch('/api/transactions').then((r) => r.json())
+                setTransactions(updated)
+                }}
+                onClose={() => setShowImport(false)}
+            />
+        )}
       </div>
 
     </div>
