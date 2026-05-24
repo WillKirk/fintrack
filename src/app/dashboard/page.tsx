@@ -44,11 +44,17 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetch('/api/dashboard')
-      .then((res) => res.json())
-      .then((data) => {
-        setData(data)
-        setLoading(false)
+    .then((res) => res.json())
+    .then((data) => {
+      setData({
+        ...data,
+        spendingByCategory: data.spendingByCategory.map((cat: any) => ({
+          ...cat,
+          total: Number(cat.total),
+        })),
       })
+      setLoading(false)
+    })
   }, [])
 
   const month = new Date().toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })
@@ -60,9 +66,10 @@ export default function DashboardPage() {
       </div>
     )
   }
+  console.log('spendingByCategory:', data?.spendingByCategory)
 
   return (
-    <div className="max-w-5xl mx-auto">
+    <div className="max-w-7xl mx-auto">
 
       <div className="mb-8">
         <p className="text-gray-400 text-sm font-mono">{month}</p>
@@ -72,7 +79,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
+      <div className="grid grid-cols-3 gap-6 mb-8">
         <div className="bg-white rounded-2xl border border-gray-200 p-5">
           <div className="flex items-center justify-between mb-3">
             <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Balance</p>
@@ -116,7 +123,7 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-6 mb-6">
+      <div className="grid grid-cols-2 gap-6 mb-8">
 
         {/* Spending by category */}
         <div className="bg-white rounded-2xl border border-gray-200 p-5">
@@ -144,7 +151,7 @@ export default function DashboardPage() {
                     ))}
                   </Pie>
                   <Tooltip
-                    formatter={(value: number) => formatCurrency(value)}
+                    formatter={(value) => [formatCurrency(value as number), '']}
                   />
                 </PieChart>
               </ResponsiveContainer>

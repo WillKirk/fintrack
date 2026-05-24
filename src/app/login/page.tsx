@@ -36,9 +36,8 @@ export default function LoginPage() {
   async function handleGuest() {
     setLoading(true)
     const result = await signIn('credentials', {
-      email: 'guest@fintrack.app',
-      password: 'guestpassword',
-      redirect: false,
+        guest: 'true',
+        redirect: false,
     })
 
     if (result?.error) {
