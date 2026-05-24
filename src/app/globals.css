@@ -23,6 +23,45 @@
   --font-mono: ui-monospace, monospace;
 }
 
+@layer utilities {
+    .bg-indigo-primary {
+      background-color: #6366F1;
+    }
+    .hover\:bg-indigo-primary:hover {
+      background-color: #6366F1;
+    }
+    .bg-indigo-hover {
+      background-color: #4F46E5;
+    }
+    .hover\:bg-indigo-hover:hover {
+      background-color: #4F46E5;
+    }
+    .text-indigo-primary {
+      color: #6366F1;
+    }
+    .hover\:text-indigo-primary:hover {
+      color: #6366F1;
+    }
+    .text-indigo-hover {
+      color: #4F46E5;
+    }
+    .hover\:text-indigo-hover:hover {
+      color: #4F46E5;
+    }
+    .border-indigo-primary {
+      border-color: #6366F1;
+    }
+    .hover\:border-indigo-primary:hover {
+      border-color: #6366F1;
+    }
+    .text-success { color: #10B981; }
+    .text-danger { color: #EF4444; }
+    .bg-success { background-color: #10B981; }
+    .bg-danger { background-color: #EF4444; }
+    .bg-indigo-subtle { background-color: #F5F3FF; }
+    .bg-indigo-light { background-color: #EEF2FF; }
+  }
+  
 @layer base {
   html {
     scroll-behavior: smooth;
@@ -31,5 +70,9 @@
   body {
     background-color: #FAFAFA;
     color: #1E1B2E;
+  }
+
+  button, a, [role="button"] {
+    cursor: pointer;
   }
 }
